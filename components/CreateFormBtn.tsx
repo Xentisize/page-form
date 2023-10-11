@@ -10,10 +10,9 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './ui/dialog';
-import { BsFileEarmarkPlus } from 'react-icons/bs';
 import { ImSpinner2 } from 'react-icons/im';
+import { BsFileEarmarkPlus } from 'react-icons/bs';
 import { Button } from './ui/button';
-import { Label } from './ui/label';
 import {
   Form,
   FormControl,
@@ -24,26 +23,26 @@ import {
   FormMessage,
 } from './ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
 import { useForm } from 'react-hook-form';
 import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { toast } from './ui/use-toast';
-
-const formSchema = z.object({
-  name: z.string().min(4),
-  description: z.string().optional(),
-});
-
-type formSchemaType = z.infer<typeof formSchema>;
+import { formSchema, type formSchemaType } from '@/schemas/form';
+import { CreateForm } from '@/actions/form';
 
 function CreateFormBtn() {
   const form = useForm<formSchemaType>({
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = (values: formSchemaType) => {
+  const onSubmit = async (values: formSchemaType) => {
     try {
+      const formId = await CreateForm(values);
+      toast({
+        title: 'Success',
+        description: 'Form created successfully',
+      });
+      console.log(formId);
     } catch (error) {
       toast({
         title: 'Error',
@@ -56,7 +55,15 @@ function CreateFormBtn() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>Create new form</Button>
+        <Button
+          className="group border border-primary/20 h-[190px] items-center justify-center flex flex-col hover:border-primary hover:cursor-pointer border-dashed gap-4"
+          variant="outline"
+        >
+          <BsFileEarmarkPlus className="h-8 w-8 text-muted-foreground group-hover:text-primary" />
+          <p className="font-bold text-xl text-muted-foreground group-hover:text-primary">
+            Create new form
+          </p>
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -96,9 +103,7 @@ function CreateFormBtn() {
           <Button
             disabled={form.formState.isSubmitting}
             className="w-full mt-4"
-            onClick={() => {
-              form.handleSubmit(onSubmit);
-            }}
+            onClick={form.handleSubmit(onSubmit)}
           >
             {form.formState.isSubmitting ? (
               <ImSpinner2 className="animate-spin" />
